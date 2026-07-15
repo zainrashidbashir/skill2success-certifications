@@ -1,4 +1,4 @@
-import { NextResponse } from "next-auth/next";
+import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { HashService, CertificateDataPayload } from "@/services/HashService";
 import { BlockchainService } from "@/services/BlockchainService";
