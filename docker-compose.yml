@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:./dev.db
+      - NEXTAUTH_SECRET=my-super-secret-jwt-key-change-me-in-production
+      - NEXTAUTH_URL=http://localhost:3000
+    volumes:
+      # Mount the database to persist data between container restarts
+      - ./prisma/dev.db:/app/prisma/dev.db
+    restart: always
+
+  # NOTE: If we switch to PostgreSQL, we would add the database service here:
+  # db:
+  #   image: postgres:15-alpine
+  #   environment:
+  #     POSTGRES_USER: admin
+  #     POSTGRES_PASSWORD: password123
+  #     POSTGRES_DB: certs_db
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #
+  # volumes:
+  #   postgres_data:

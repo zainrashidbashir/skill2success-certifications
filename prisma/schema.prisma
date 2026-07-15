@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("ADMIN")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Student {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String?  // Optional for backward compatibility with seeded data
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  certificates Certificate[]
+}
+
+model Course {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  certificates Certificate[]
+}
+
+model Instructor {
+  id        String   @id @default(uuid())
+  name      String
+  title     String?
+  signature String?  // Path/URL to signature image
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  certificates Certificate[]
+}
+
+model Certificate {
+  id             String   @id @default(uuid())
+  credentialId   String   @unique // e.g., ABC123XYZ
+  studentId      String
+  courseId       String
+  instructorId   String
+  issueDate      DateTime @default(now())
+  completionDate DateTime
+  status         String   @default("VALID") // VALID, REVOKED, EXPIRED
+  hash           String   @unique // SHA-256 cryptographic hash of certificate data
+  qrCodeUrl      String?
+  pdfUrl         String?
+  
+  student    Student    @relation(fields: [studentId], references: [id])
+  course     Course     @relation(fields: [courseId], references: [id])
+  instructor Instructor @relation(fields: [instructorId], references: [id])
+  
+  verificationLogs VerificationLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationLog {
+  id            String   @id @default(uuid())
+  certificateId String
+  verifiedAt    DateTime @default(now())
+  ipAddress     String?
+  userAgent     String?
+  success       Boolean
+
+  certificate Certificate @relation(fields: [certificateId], references: [id], onDelete: Cascade)
+}
