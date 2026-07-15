@@ -14,12 +14,12 @@ const prisma = new PrismaClient();
 export default async function StudentDashboard() {
   const session = await getServerSession(authOptions);
 
-  if (!session || session.user.role !== "STUDENT") {
+  if (!session || !session.user || (session.user as any).role !== "STUDENT") {
     redirect("/login");
   }
 
   const student = await prisma.student.findUnique({
-    where: { id: session.user.id },
+    where: { id: (session.user as any).id },
     include: {
       certificates: {
         include: { course: true, instructor: true }
