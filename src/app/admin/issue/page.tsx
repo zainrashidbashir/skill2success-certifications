@@ -4,11 +4,12 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import CertificatePreview from "@/components/CertificatePreview";
 
 export default function IssueForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState({ students: [], courses: [], instructors: [] });
+  const [data, setData] = useState<any>({ students: [], courses: [], instructors: [], templates: [] });
   
   const [formData, setFormData] = useState({
     studentId: "",
@@ -16,6 +17,7 @@ export default function IssueForm() {
     instructorName: "",
     issueDate: new Date().toISOString().split("T")[0],
     completionDate: new Date().toISOString().split("T")[0],
+    templateId: "",
   });
 
   useEffect(() => {
@@ -23,8 +25,13 @@ export default function IssueForm() {
     async function fetchData() {
       const res = await fetch("/api/admin/data");
       const json = await res.json();
-      setData(json);
+      
+      const templatesRes = await fetch("/api/admin/templates");
+      const templatesJson = await templatesRes.json();
+      
+      setData({ ...json, templates: templatesJson });
       if (json.students.length > 0) setFormData(f => ({ ...f, studentId: json.students[0].id }));
+      if (templatesJson.length > 0) setFormData(f => ({ ...f, templateId: templatesJson[0].id }));
     }
     fetchData();
   }, []);
@@ -136,6 +143,32 @@ export default function IssueForm() {
                     required
                   />
                 </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2">Certificate Template (Optional)</label>
+                <select 
+                  className="w-full border rounded-md p-2 dark:bg-gray-900"
+                  value={formData.templateId}
+                  onChange={(e) => setFormData({ ...formData, templateId: e.target.value })}
+                >
+                  <option value="">-- Legacy Template --</option>
+                  {data.templates?.map((t: any) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                </select>
+              </div>
+
+              {/* Live Preview */}
+              <div className="mt-8 border-t pt-8 flex flex-col items-center">
+                <h3 className="text-lg font-semibold mb-4 w-full">Live Preview</h3>
+                <CertificatePreview certData={{
+                  studentName: data.students.find((s: any) => s.id === formData.studentId)?.name || "[Student Name]",
+                  courseName: formData.courseName || "[Course Name]",
+                  instructorName: formData.instructorName || "[Instructor Name]",
+                  issueDate: formData.issueDate,
+                  credentialId: "PREVIEW-12345",
+                  verifyUrl: "https://credentials.skill2success.com/verify/PREVIEW-12345",
+                  template: data.templates?.find((t: any) => t.id === formData.templateId)
+                }} />
               </div>
 
               <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={loading}>

@@ -30,6 +30,16 @@ export default async function AdminDashboard() {
             <p className="text-gray-500">Manage students, courses, and certificates.</p>
           </div>
           <div className="space-x-4">
+            <Link href="/admin/templates">
+              <Button variant="outline">
+                Manage Templates
+              </Button>
+            </Link>
+            <Link href="/admin/issue/batch">
+              <Button variant="outline" className="border-blue-500 text-blue-600 hover:bg-blue-50">
+                Batch Issue (Excel)
+              </Button>
+            </Link>
             <Link href="/admin/issue">
               <Button className="bg-green-600 hover:bg-green-700">
                 <PlusCircle className="mr-2 h-4 w-4" /> Issue Certificate

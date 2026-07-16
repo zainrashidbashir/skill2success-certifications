@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, XCircle, ShieldCheck } from "lucide-react";
 import React from "react";
 import CertificatePDFGenerator from "@/components/CertificatePDFGenerator";
+import CertificatePreview from "@/components/CertificatePreview";
 
 const prisma = new PrismaClient();
 
@@ -13,7 +14,7 @@ export default async function VerifyPage({ params }: { params: Promise<{ credent
   // 1. Fetch certificate from DB
   const certificate = await prisma.certificate.findUnique({
     where: { credentialId: resolvedParams.credentialId },
-    include: { student: true, course: true, instructor: true }
+    include: { student: true, course: true, instructor: true, template: true }
   });
 
   if (!certificate) {
@@ -118,6 +119,18 @@ export default async function VerifyPage({ params }: { params: Promise<{ credent
                 </p>
               </div>
 
+              <div className="mt-8 flex justify-center">
+                <CertificatePreview certData={{
+                  studentName: certificate.student.name,
+                  courseName: certificate.course.name,
+                  instructorName: certificate.instructor.name,
+                  issueDate: certificate.issueDate.toISOString(),
+                  credentialId: certificate.credentialId,
+                  verifyUrl: `https://credentials.skill2success.com/verify/${certificate.credentialId}`,
+                  template: certificate.template
+                }} />
+              </div>
+
               <div className="mt-6 flex justify-center">
                 <CertificatePDFGenerator 
                   certData={{
@@ -126,7 +139,8 @@ export default async function VerifyPage({ params }: { params: Promise<{ credent
                     instructorName: certificate.instructor.name,
                     issueDate: certificate.issueDate.toISOString(),
                     credentialId: certificate.credentialId,
-                    verifyUrl: `https://credentials.skill2success.com/verify/${certificate.credentialId}`
+                    verifyUrl: `https://credentials.skill2success.com/verify/${certificate.credentialId}`,
+                    template: certificate.template
                   }}
                 />
               </div>

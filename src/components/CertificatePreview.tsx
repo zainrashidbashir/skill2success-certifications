@@ -1,82 +1,30 @@
-"use client";
+import React from "react";
 
-import { useRef, useState } from "react";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
-import { Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
-
-interface CertificateProps {
-  studentName: string;
-  courseName: string;
-  instructorName: string;
-  issueDate: string;
-  credentialId: string;
-  verifyUrl: string;
-  template?: {
-    backgroundImage: string;
-    layoutConfig: string;
-  } | null;
-}
-
-export default function CertificatePDFGenerator({ certData }: { certData: CertificateProps }) {
-  const certificateRef = useRef<HTMLDivElement>(null);
-  const [loading, setLoading] = useState(false);
-
-  const downloadPDF = async () => {
-    if (!certificateRef.current) return;
-    setLoading(true);
-    
-    try {
-      certificateRef.current.style.display = "block";
-      
-      const canvas = await html2canvas(certificateRef.current, {
-        scale: 2, 
-        useCORS: true,
-        logging: false
-      });
-
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({
-        orientation: "landscape",
-        unit: "mm",
-        format: "a4" 
-      });
-
-      pdf.addImage(imgData, "PNG", 0, 0, 297, 210);
-      pdf.save(`Skill2Success_Certificate_${certData.credentialId}.pdf`);
-
-      certificateRef.current.style.display = "none";
-    } catch (err) {
-      console.error("Failed to generate PDF", err);
-    }
-    setLoading(false);
-  };
-
+export default function CertificatePreview({ certData }: { certData: any }) {
   const hasTemplate = !!certData.template;
   let layoutConfig: any[] = [];
   if (hasTemplate && certData.template?.layoutConfig) {
     try { layoutConfig = JSON.parse(certData.template.layoutConfig); } catch (e) {}
   }
 
-  return (
-    <>
-      <Button variant="outline" onClick={downloadPDF} disabled={loading}>
-        <Download className="mr-2 h-4 w-4" /> 
-        {loading ? "Generating PDF..." : "Download PDF"}
-      </Button>
+  // We scale it down to fit in normal layouts. 
+  // 1122x794 is the original size. We will use CSS transform to scale it.
+  const scale = 0.5; 
+  const scaledWidth = 1122 * scale;
+  const scaledHeight = 794 * scale;
 
-      {/* Hidden Certificate HTML Template to be rendered into PDF */}
+  return (
+    <div style={{ width: scaledWidth, height: scaledHeight, position: "relative" }} className="mx-auto my-6 overflow-hidden rounded-lg border shadow-sm bg-gray-200">
       <div 
-        ref={certificateRef} 
         style={{
-          display: "none",
           width: "1122px", 
           height: "794px", 
           backgroundColor: "#ffffff",
           position: "absolute",
-          top: "-9999px",
-          left: "-9999px",
+          top: 0,
+          left: 0,
+          transformOrigin: "top left",
+          transform: `scale(${scale})`,
           ...(hasTemplate ? {
             backgroundImage: `url('${certData.template?.backgroundImage}')`,
             backgroundSize: "100% 100%",
@@ -98,8 +46,8 @@ export default function CertificatePDFGenerator({ certData }: { certData: Certif
               if (field.type === "qrCode") {
                 return (
                   <div key={i} style={{ position: "absolute", left: field.x, top: field.y, width: 100, height: 100, background: "white", border: "1px solid #ccc", padding: 4 }}>
-                    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #000" }}>
-                      QR: {certData.credentialId.slice(0, 6)}
+                    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyItems: "center", justifyContent: "center", border: "1px solid #000" }}>
+                      QR
                     </div>
                   </div>
                 );
@@ -185,6 +133,6 @@ export default function CertificatePDFGenerator({ certData }: { certData: Certif
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }

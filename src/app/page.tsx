@@ -1,13 +1,21 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ShieldCheck, User, LayoutDashboard } from "lucide-react";
+import Image from "next/image";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 flex flex-col items-center justify-center p-8">
       <div className="max-w-3xl text-center space-y-8">
         <div className="flex justify-center mb-6">
-          <ShieldCheck className="w-24 h-24 text-green-600" />
+          <Image 
+            src="/logo.png" 
+            alt="Skill2Success Logo" 
+            width={300} 
+            height={100} 
+            className="object-contain"
+            priority
+          />
         </div>
         
         <h1 className="text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight">

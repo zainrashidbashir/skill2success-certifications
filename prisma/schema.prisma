@@ -62,10 +62,12 @@ model Certificate {
   hash           String   @unique // SHA-256 cryptographic hash of certificate data
   qrCodeUrl      String?
   pdfUrl         String?
+  templateId     String?
   
   student    Student    @relation(fields: [studentId], references: [id])
   course     Course     @relation(fields: [courseId], references: [id])
   instructor Instructor @relation(fields: [instructorId], references: [id])
+  template   CertificateTemplate? @relation(fields: [templateId], references: [id])
   
   verificationLogs VerificationLog[]
 
@@ -82,4 +84,15 @@ model VerificationLog {
   success       Boolean
 
   certificate Certificate @relation(fields: [certificateId], references: [id], onDelete: Cascade)
+}
+
+model CertificateTemplate {
+  id              String   @id @default(uuid())
+  name            String
+  backgroundImage String   @db.Text // Base64 or URL
+  layoutConfig    String   @db.Text // JSON string containing coordinates, fonts, etc.
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  certificates Certificate[]
 }

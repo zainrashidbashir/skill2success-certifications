@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Download, Share2 } from "lucide-react";
 import Link from "next/link";
 import CertificatePDFGenerator from "@/components/CertificatePDFGenerator";
+import CertificatePreview from "@/components/CertificatePreview";
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -22,7 +23,7 @@ export default async function StudentDashboard() {
     where: { id: (session.user as any).id },
     include: {
       certificates: {
-        include: { course: true, instructor: true }
+        include: { course: true, instructor: true, template: true }
       }
     }
   });
@@ -66,9 +67,21 @@ export default async function StudentDashboard() {
                     <div>
                       <p className="text-sm font-semibold text-green-600 mb-1">Credential ID: {cert.credentialId}</p>
                       <CardTitle className="text-2xl mb-2">{cert.course.name}</CardTitle>
-                      <CardDescription>
-                        Issued on {new Date(cert.issueDate).toLocaleDateString()} by {cert.instructor.name}
-                      </CardDescription>
+                      <p className="text-sm text-gray-500 mb-6">
+                        Issued on {new Date(cert.issueDate).toLocaleDateString()}
+                      </p>
+
+                      <div className="mb-6 flex justify-center">
+                        <CertificatePreview certData={{
+                          studentName: student.name,
+                          courseName: cert.course.name,
+                          instructorName: cert.instructor.name,
+                          issueDate: cert.issueDate.toISOString(),
+                          credentialId: cert.credentialId,
+                          verifyUrl: verifyUrl,
+                          template: cert.template
+                        }} />
+                      </div>
                     </div>
                     
                     <div className="mt-6 flex flex-wrap gap-3">
@@ -86,7 +99,8 @@ export default async function StudentDashboard() {
                           instructorName: cert.instructor.name,
                           issueDate: cert.issueDate.toISOString(),
                           credentialId: cert.credentialId,
-                          verifyUrl: verifyUrl
+                          verifyUrl: verifyUrl,
+                          template: cert.template
                         }}
                       />
 
