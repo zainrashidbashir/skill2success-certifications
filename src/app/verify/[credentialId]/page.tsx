@@ -6,8 +6,39 @@ import React from "react";
 import CertificatePDFGenerator from "@/components/CertificatePDFGenerator";
 import CertificatePreview from "@/components/CertificatePreview";
 
+import { Metadata, ResolvingMetadata } from "next";
+
 const prisma = new PrismaClient();
 
+type Props = {
+  params: Promise<{ credentialId: string }>
+}
+
+export async function generateMetadata(
+  { params }: Props,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const resolvedParams = await params;
+  const certificate = await prisma.certificate.findUnique({
+    where: { credentialId: resolvedParams.credentialId },
+    include: { student: true, course: true }
+  });
+
+  if (!certificate) {
+    return {
+      title: "Invalid Certificate - Skill2Success",
+    }
+  }
+
+  return {
+    title: `${certificate.course.name} Certificate - ${certificate.student.name}`,
+    description: `Verify the digital certificate for ${certificate.student.name} awarded by Skill2Success.`,
+    openGraph: {
+      title: `${certificate.course.name} Certificate - ${certificate.student.name}`,
+      description: `Official digital credential awarded to ${certificate.student.name} for successfully completing ${certificate.course.name}.`,
+    }
+  }
+}
 export default async function VerifyPage({ params }: { params: Promise<{ credentialId: string }> }) {
   const resolvedParams = await params;
   
